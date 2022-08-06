@@ -1,5 +1,5 @@
 #!/bin/sh
-rm -rf build/
+./clean.sh
 mkdir build
 #yasm -f bin -o build/main.bin main.asm
 nasm -f bin -o build/main.bin main.asm
