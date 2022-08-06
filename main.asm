@@ -1,35 +1,36 @@
-org 7C00h
+section .text
+     use16
+     org  0x7C00  ; наша программа загружается по адресу 0x7C00
+start:
+     mov  ax, cs
+     mov  ds, ax  ; выбираем сегмент данных
+ 
+     mov  si, message
+     cld              ; направление для строковых команд
+     mov  ah, 0x0E    ; номер функции BIOS
+     mov  bh, 0x00    ; страница видеопамяти
+puts_loop:
+     lodsb            ; загружаем очередной символ в al
+     test al, al      ; нулевой символ означает конец строки
+     jz   puts_loop_exit
+     int  0x10        ; вызываем функцию BIOS
+     jmp  puts_loop
 
- start:
-    cli              ;Запрещаем прерывания (чтобы ничего не отвлекало)
-    xor ax, ax       ;Обнуляем регистр ax
-    mov ds, ax       ;Настраиваем dataSegment на нулевой адрес
-    mov es, ax       ;Настраиваем сегмент es на нулевой адрес
-    mov ss, ax       ;Настраиваем StackSegment на нулевой адрес
-    mov sp, 07C00h   ;Указываем на текущую вершину стека
-    sti              ;Запрещаем прерывания
+puts_loop_exit:
+     mov bl, 9
 
-  ;Очищаем экран
-  mov ax, 3
-  int 10h
+my_loop:
+     mov al, bl
+     add al, '0'
+     int 0x10
+     dec bl
+     jnz my_loop
 
-  mov ah, 2h
-  mov dh, 0
-  mov dl, 0
-  xor bh, bh
-  int 10h
-
-  ;Печатаем строку
-  mov ax, 1301h
-  mov bp, message
-  mov cx, 12
-  mov bl, 02h
-  int 10h
-
-  jmp $
-
-message db 'Hello World!',0
-
-times 510 - ($ - $$) db 0 ;Заполнение оставшихся байт нулями до 510-го байта
-db 0x55, 0xAA ;Загрузочная сигнатура 
+     jmp  $           ; вечный цикл
+ 
+message:
+     db   'Hello World!', 0x0A, 0x0D, 0
+finish:
+     times 0x1FE-finish+start db 0
+     db   0x55, 0xAA  ; сигнатура загрузочного сектора
 
